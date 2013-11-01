@@ -1,0 +1,33 @@
+Minimal gdb is a lightweight vim->gdb broker, that only allows you to set breakpoints in vim and automatically export them to gdb.
+
+You can't use the Minimal gdb for debugging inside vim windows, you have to start a separate gdb session, but all the breakpoints you've set will be magicaly (via .gdbinit actually) active in the debugger.
+The main difference from other similiar gdb vim plugins, is that Minimal gdb uses the .gdbinit file for breakpoint export and doesn't allow in-window fully integrated debugging in vim. If some new breakpoints were set in vim after gdb startup, one has to run "syncbp" command in gdb or restart the debugger in order to import them.
+The "syncbp" command will be added to gdb on plugin first run via .gdbinit magic.
+
+Typical use case looks like this:
+    1. set some breakpoints in vim, they will be highlighted in the 'sign' column
+    2. run gdb, which will automatically export breakpoints from step 1.
+    3. set some more breakpoints
+    4. export them in gdb by using the new gdb "synbp" command, or by restarting it (the former is easier).
+
+INSTALLATION:
+    Copy the files to your .vim folder or use Vundle.
+    Script will configure everything when you set the first breakpoint
+
+COMMANDS:
+    In vim:
+    MinGDBToggleBP or <leader>b - toggles a breakpoint.
+    MinGDBDeleteAll - delete all breakpoints
+    MinGDBRefreshFile - refresh breakpoints positions in a vim file. Use this in case something went wrong.
+
+    In gdb:
+    synbp - export new breakpoints from vim, that were set after gdb session has started.
+
+
+REQUIREMENTS:
+    gdb
+    python 2.7
+    vim compiled with python and signs features.
+
+
+Tested with vim and gvim in linux and freebsd
