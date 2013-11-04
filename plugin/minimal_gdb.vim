@@ -1,6 +1,6 @@
 sign define mingdbtag text=<> texthl=Breakpoint
 
-function MinGDBCheckFileType()
+function! MinGDBCheckFileType()
     if (&filetype != 'cpp' && &filetype != 'c')
         return
     endif

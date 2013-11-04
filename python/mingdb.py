@@ -160,8 +160,8 @@ def ToggleBreakpoint(fileName, lineNo, maxAgeInHours = 0, debug = False):
         newBpId = GetMaxId(breakpoints) + 1
         breakpoints[newBreakpoint] = newBpId
         ExecuteVimCommand('sign place %d line=%d name=mingdbtag file=%s' % (newBpId, lineNo, fileName), debug)
-    CommitBreakpoints(breakpoints)
     EnsureDebugEnvironment()
+    CommitBreakpoints(breakpoints)
 
 
 def ExportBreakpoints():
