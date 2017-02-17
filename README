@@ -26,8 +26,14 @@ COMMANDS:
 
 REQUIREMENTS:
     gdb
-    python 2.7
+    python 2.7, or 3.xx
     vim compiled with python and signs features.
+    python future module
+
+    ```bash
+    pip install future
+    ```
+
 
 
 Tested with vim and gvim in linux and freebsd
