@@ -6,6 +6,8 @@ import optparse
 import errno
 from os.path import dirname
 import time
+# future and builtins require: pip install future
+from future.utils import iteritems, itervalues
 
 #XXX Attention! there shouldn't be any unsaved changes in the file in which we want to set a breakpoint.
 
@@ -84,7 +86,7 @@ def ReadBreakpoints():
 def GetMaxId(breakpoints):
     if not len(breakpoints):
         return BREAKPOINT_START_ID
-    return max(breakpoints.itervalues())
+    return max(itervalues(breakpoints))
 
 
 def RestoreLineNumber(breakpoint):
@@ -105,7 +107,7 @@ def RestoreLineNumber(breakpoint):
 
 def DeleteAllBreakpoints(debug = False):
     breakpoints = ReadBreakpoints()
-    for id in breakpoints.itervalues():
+    for id in itervalues(breakpoints):
         ExecuteVimCommand('sign unplace %d' % id, debug)
     open(BREAKPOINTS_DB_PATH, 'w').close()
 
@@ -114,9 +116,9 @@ def ShowBreakpointsInFile(fileName, debug = False):
     breakpoints = ReadBreakpoints()
     breakpoints = dict((k, breakpoints[k]) for k in breakpoints.iterkeys() if k.File == fileName)
     #unplacing all breakpoints by ids, to make sure there are no duplicates
-    for id in breakpoints.itervalues():
+    for id in itervalues(breakpoints):
         ExecuteVimCommand('sign unplace %d' % id, debug)
-    for bp, id in breakpoints.iteritems():
+    for bp, id in iteritems(breakpoints):
         lineNo = RestoreLineNumber(bp)
         if lineNo:
             ExecuteVimCommand('sign place %d line=%d name=mingdbtag file=%s' % (id, lineNo, bp.File), debug)
@@ -124,14 +126,14 @@ def ShowBreakpointsInFile(fileName, debug = False):
 
 def CommitBreakpoints(breakpoints):
     with open(BREAKPOINTS_DB_PATH, 'w') as f:
-        for bp, id in breakpoints.iteritems():
+        for bp, id in iteritems(breakpoints):
             entry = TEntry(id, bp)
             f.write(str(entry) + '\n')
 
 
 def ExecuteVimCommand(cmd, debug):
     if debug:
-        print cmd
+        print(cmd)
     else:
         import vim
         vim.command(cmd)
@@ -167,7 +169,7 @@ def ToggleBreakpoint(fileName, lineNo, maxAgeInHours = 0, debug = False):
 def ExportBreakpoints():
     breakpoints = ReadBreakpoints()
     with open(BREAKPOINTS_GDB_PATH, 'w') as f:
-        for bp, id in breakpoints.iteritems():
+        for bp, id in iteritems(breakpoints):
             lineNo = RestoreLineNumber(bp)
             if lineNo:
                 f.write('break %s:%d\n' % (bp.File, lineNo))
@@ -232,7 +234,7 @@ def main():
 
     if options.check:
         result = 'empty' if DatabaseIsEmpty() else 'full'
-        print result
+        print(result)
         return
 
     if options.breakpoint:
