@@ -7,9 +7,29 @@ import errno
 from os.path import dirname
 import time
 # future and builtins require: pip install future
-from future.utils import iteritems, itervalues
+#from future.utils import iteritems, itervalues
 
 #XXX Attention! there shouldn't be any unsaved changes in the file in which we want to set a breakpoint.
+
+
+_debug_mode = False
+
+
+def iterkeys6(x):
+    if sys.version_info[0] < 3:
+        return x.iterkeys()
+    return list(x.keys())
+
+def iteritems6(x):
+    if sys.version_info[0] < 3:
+        return x.iteritems()
+    return list(x.items())
+
+def itervalues6(x):
+    if sys.version_info[0] < 3:
+        return x.itervalues()
+    return list(x.values())
+
 
 BREAKPOINTS_DB_PATH = os.path.join(dirname(dirname(os.path.realpath(__file__))), 'dbg_data' ,'breakpoints.db')
 BREAKPOINTS_GDB_PATH = os.path.join(dirname(dirname(os.path.realpath(__file__))), 'dbg_data' ,'breakpoints.gdb')
@@ -86,7 +106,7 @@ def ReadBreakpoints():
 def GetMaxId(breakpoints):
     if not len(breakpoints):
         return BREAKPOINT_START_ID
-    return max(itervalues(breakpoints))
+    return max(itervalues6(breakpoints))
 
 
 def RestoreLineNumber(breakpoint):
@@ -105,34 +125,34 @@ def RestoreLineNumber(breakpoint):
     return None
 
 
-def DeleteAllBreakpoints(debug = False):
+def DeleteAllBreakpoints():
     breakpoints = ReadBreakpoints()
-    for id in itervalues(breakpoints):
-        ExecuteVimCommand('sign unplace %d' % id, debug)
+    for id in itervalues6(breakpoints):
+        ExecuteVimCommand('sign unplace %d' % id)
     open(BREAKPOINTS_DB_PATH, 'w').close()
 
 
-def ShowBreakpointsInFile(fileName, debug = False):
+def ShowBreakpointsInFile(fileName):
     breakpoints = ReadBreakpoints()
-    breakpoints = dict((k, breakpoints[k]) for k in breakpoints.iterkeys() if k.File == fileName)
+    breakpoints = dict((k, breakpoints[k]) for k in iterkeys6(breakpoints) if k.File == fileName)
     #unplacing all breakpoints by ids, to make sure there are no duplicates
-    for id in itervalues(breakpoints):
-        ExecuteVimCommand('sign unplace %d' % id, debug)
-    for bp, id in iteritems(breakpoints):
+    for id in itervalues6(breakpoints):
+        ExecuteVimCommand('sign unplace %d' % id)
+    for bp, id in iteritems6(breakpoints):
         lineNo = RestoreLineNumber(bp)
         if lineNo:
-            ExecuteVimCommand('sign place %d line=%d name=mingdbtag file=%s' % (id, lineNo, bp.File), debug)
+            ExecuteVimCommand('sign place %d line=%d name=mingdbtag file=%s' % (id, lineNo, bp.File))
 
 
 def CommitBreakpoints(breakpoints):
     with open(BREAKPOINTS_DB_PATH, 'w') as f:
-        for bp, id in iteritems(breakpoints):
+        for bp, id in iteritems6(breakpoints):
             entry = TEntry(id, bp)
             f.write(str(entry) + '\n')
 
 
-def ExecuteVimCommand(cmd, debug):
-    if debug:
+def ExecuteVimCommand(cmd):
+    if _debug_mode:
         print(cmd)
     else:
         import vim
@@ -149,7 +169,7 @@ def GetLineTextAndRepeatNumber(fileName, lineNo):
         return (lineText, repeatNumber)
 
 
-def ToggleBreakpoint(fileName, lineNo, maxAgeInHours = 0, debug = False):
+def ToggleBreakpoint(fileName, lineNo, maxAgeInHours = 0):
     assert (fileName.find('\t') == -1)
     lineText, repeatNumber = GetLineTextAndRepeatNumber(fileName, lineNo)
     newBreakpoint = TBreakpoint(time.time(), maxAgeInHours, fileName, repeatNumber, lineText)
@@ -157,11 +177,11 @@ def ToggleBreakpoint(fileName, lineNo, maxAgeInHours = 0, debug = False):
     if newBreakpoint in breakpoints:
         oldBpId = breakpoints[newBreakpoint]
         del breakpoints[newBreakpoint]
-        ExecuteVimCommand('sign unplace %d' % oldBpId, debug)
+        ExecuteVimCommand('sign unplace %d' % oldBpId)
     else:
         newBpId = GetMaxId(breakpoints) + 1
         breakpoints[newBreakpoint] = newBpId
-        ExecuteVimCommand('sign place %d line=%d name=mingdbtag file=%s' % (newBpId, lineNo, fileName), debug)
+        ExecuteVimCommand('sign place %d line=%d name=mingdbtag file=%s' % (newBpId, lineNo, fileName))
     EnsureDebugEnvironment()
     CommitBreakpoints(breakpoints)
 
@@ -169,7 +189,7 @@ def ToggleBreakpoint(fileName, lineNo, maxAgeInHours = 0, debug = False):
 def ExportBreakpoints():
     breakpoints = ReadBreakpoints()
     with open(BREAKPOINTS_GDB_PATH, 'w') as f:
-        for bp, id in iteritems(breakpoints):
+        for bp, id in iteritems6(breakpoints):
             lineNo = RestoreLineNumber(bp)
             if lineNo:
                 f.write('break %s:%d\n' % (bp.File, lineNo))
@@ -212,6 +232,9 @@ def DatabaseIsEmpty():
     breakpoints = ReadBreakpoints()
     return (len(breakpoints) == 0)
 
+def InitCacheFlag():
+    if DatabaseIsEmpty():
+        ExecuteVimCommand("let s:debug_session_is_active_cache_flag = 0")
 
 
 def main():
@@ -237,16 +260,19 @@ def main():
         print(result)
         return
 
+    global _debug_mode
+    _debug_mode = options.debug
+
     if options.breakpoint:
-        ToggleBreakpoint(options.file, options.lineno, options.age, options.debug)
+        ToggleBreakpoint(options.file, options.lineno, options.age)
         return
 
     if options.delete:
-        DeleteAllBreakpoints(options.debug)
+        DeleteAllBreakpoints()
         return
 
     if options.show:
-        ShowBreakpointsInFile(options.file, options.debug)
+        ShowBreakpointsInFile(options.file)
         return
 
     if options.export:

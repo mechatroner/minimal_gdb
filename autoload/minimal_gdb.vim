@@ -9,14 +9,23 @@ function! s:EnsurePythonInitialization()
     if (s:python_env_initialized)
         return
     endif
-    py import sys
-    py import vim
-    exe 'python sys.path.insert(0, "' . s:script_folder_path . '/../python")'
-    py import mingdb
-    let s:python_env_initialized = 1
-    if pyeval('mingdb.DatabaseIsEmpty()')
-        let s:debug_session_is_active_cache_flag = 0
+    if has("python3")
+        py3 import sys
+        py3 import vim
+        exe 'python3 sys.path.insert(0, "' . s:script_folder_path . '/../python")'
+        py3 import mingdb
+        py3 mingdb.InitCacheFlag()
+    else
+        py import sys
+        py import vim
+        exe 'python sys.path.insert(0, "' . s:script_folder_path . '/../python")'
+        py import mingdb
+        py mingdb.InitCacheFlag()
     endif
+    "if pyeval('mingdb.DatabaseIsEmpty()')
+    "    let s:debug_session_is_active_cache_flag = 0
+    "endif
+    let s:python_env_initialized = 1
 endfunction
 
 function minimal_gdb#toggle()
@@ -31,14 +40,22 @@ function minimal_gdb#toggle()
     let lineno = line(".")
     let filename = expand("%:p")
     call s:EnsurePythonInitialization()
-    py mingdb.ToggleBreakpoint(vim.eval('filename'), int(vim.eval('lineno')), int(vim.eval('max_age')))
+    if has("python3")
+        py3 mingdb.ToggleBreakpoint(vim.eval('filename'), int(vim.eval('lineno')), int(vim.eval('max_age')))
+    else
+        py mingdb.ToggleBreakpoint(vim.eval('filename'), int(vim.eval('lineno')), int(vim.eval('max_age')))
+    endif
     let s:debug_session_is_active_cache_flag = 1
     redraw!
 endfunction
 
 function minimal_gdb#delete_all()
     call s:EnsurePythonInitialization()
-    py mingdb.DeleteAllBreakpoints()
+    if has("python3")
+        py3 mingdb.DeleteAllBreakpoints()
+    else
+        py mingdb.DeleteAllBreakpoints()
+    endif
     redraw!
 endfunction
 
@@ -48,6 +65,10 @@ function minimal_gdb#show_breakpoints()
     endif
     call s:EnsurePythonInitialization()
     let filename = expand("%:p")
-    py mingdb.ShowBreakpointsInFile(vim.eval('filename'))
+    if has("python3")
+        py3 mingdb.ShowBreakpointsInFile(vim.eval('filename'))
+    else
+        py mingdb.ShowBreakpointsInFile(vim.eval('filename'))
+    endif
     redraw!
 endfunction
