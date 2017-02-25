@@ -73,7 +73,7 @@ def ReadBreakpoints():
     try:
         with open(BREAKPOINTS_DB_PATH, 'r') as f:
             for line in f:
-                line = line.rstrip()
+                line = line.rstrip('\n')
                 entry = TEntry.from_string(line)
                 if not entry.Breakpoint.IsExpired():
                     result[entry.Breakpoint] = entry.Id
@@ -94,7 +94,7 @@ def RestoreLineNumber(breakpoint):
         with open(breakpoint.File, 'r') as f:
             repeatNumber = 0
             for iLine, line in enumerate(f, start = 1):
-                line = line.rstrip()
+                line = line.rstrip('\n')
                 if line == breakpoint.Line:
                     if repeatNumber == breakpoint.RepeatNumber:
                         return iLine
@@ -142,8 +142,8 @@ def ExecuteVimCommand(cmd, debug):
 def GetLineTextAndRepeatNumber(fileName, lineNo):
     with open(fileName) as f:
         content = f.readlines()
-        lineText = content[lineNo - 1].rstrip()
-        enumeratedContent = [(lineno, line.rstrip()) for lineno, line in enumerate(content, start = 1)]
+        lineText = content[lineNo - 1].rstrip('\n')
+        enumeratedContent = [(lineno, line.rstrip('\n')) for lineno, line in enumerate(content, start = 1)]
         repeatedLines = [rl for rl in enumeratedContent if rl[1] == lineText]
         repeatNumber = repeatedLines.index((lineNo, lineText))
         return (lineText, repeatNumber)
@@ -179,7 +179,7 @@ def IsGdbInitPatched():
     try:
         with open(GDB_INIT_PATH, 'r') as f:
             for line in f:
-                line = line.rstrip()
+                line = line.rstrip('\n')
                 if line == SETTINGS_SPELL:
                     return True
     except IOError as exc:
