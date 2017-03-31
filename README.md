@@ -11,8 +11,8 @@ The main difference from other gdb vim plugins, is that Minimal gdb uses the `.g
 #### A typical use case looks like this:
 1. Set some breakpoints in vim, they will be highlighted in the 'sign' column
 2. Run gdb, which will automatically export the breakpoints from step 1.
-3. Set some more breakpoints
-4. Export them in gdb by using `synbp` command, or by restarting the debugger (the former is easier).
+3. Set some more breakpoints in vim
+4. Export them in gdb by using `syncbp` command, or by restarting the debugger (the former is easier).
 
 ## INSTALLATION:
 Copy the files to your .vim folder or use Vundle.
@@ -25,7 +25,7 @@ The script will configure everything when you set a first breakpoint.
 * `MinGDBRefreshFile` - refresh breakpoints positions in a vim file. Use this in case something went wrong.
 
 ### In gdb:
-* `synbp` - export new breakpoints from vim, which were set after gdb session has started.
+* `syncbp` - export new breakpoints from vim, which were set after gdb session has started.
 
 
 ## REQUIREMENTS:
