@@ -1,4 +1,3 @@
-let s:script_folder_path = fnamemodify(expand('<sfile>:p'), ':h:h')
 let s:python_env_initialized = 0
 let s:debug_session_is_active_cache_flag = 1
 let s:max_bp_age = 48
@@ -12,13 +11,11 @@ function! s:EnsurePythonInitialization()
     if has("python3")
         py3 import sys
         py3 import vim
-        exe 'python3 sys.path.insert(0, "' . s:script_folder_path . '/python")'
         py3 import mingdb
         py3 mingdb.InitCacheFlag()
     else
         py import sys
         py import vim
-        exe 'python sys.path.insert(0, "' . s:script_folder_path . '/python")'
         py import mingdb
         py mingdb.InitCacheFlag()
     endif
