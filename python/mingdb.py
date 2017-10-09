@@ -31,10 +31,10 @@ def itervalues6(x):
     return list(x.values())
 
 
-BREAKPOINTS_DB_PATH = os.path.join(dirname(dirname(os.path.realpath(__file__))), 'dbg_data' ,'breakpoints.db')
-BREAKPOINTS_GDB_PATH = os.path.join(dirname(dirname(os.path.realpath(__file__))), 'dbg_data' ,'breakpoints.gdb')
-MIN_GDB_SETTINGS_PATH = os.path.join(dirname(dirname(os.path.realpath(__file__))), 'dbg_data' ,'min_settings.gdb')
-SCRIPT_SELF_PATH = os.path.realpath(__file__.rstrip('c'))
+BREAKPOINTS_DB_PATH = os.path.join(dirname(dirname(__file__)), 'dbg_data' ,'breakpoints.db')
+BREAKPOINTS_GDB_PATH = os.path.join(dirname(dirname(__file__)), 'dbg_data' ,'breakpoints.gdb')
+MIN_GDB_SETTINGS_PATH = os.path.join(dirname(dirname(__file__)), 'dbg_data' ,'min_settings.gdb')
+SCRIPT_SELF_PATH = __file__.rstrip('c')
 SETTINGS_SPELL = 'source %s' % MIN_GDB_SETTINGS_PATH
 GDB_INIT_PATH = os.path.join(os.path.expanduser('~'), '.gdbinit')
 BREAKPOINT_START_ID = 1000000
