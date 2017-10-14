@@ -6,8 +6,6 @@ import optparse
 import errno
 from os.path import dirname
 import time
-# future and builtins require: pip install future
-#from future.utils import iteritems, itervalues
 
 #XXX Attention! there shouldn't be any unsaved changes in the file in which we want to set a breakpoint.
 
@@ -31,11 +29,10 @@ def itervalues6(x):
     return list(x.values())
 
 
-BREAKPOINTS_DB_PATH = os.path.join(dirname(dirname(os.path.realpath(__file__))), 'dbg_data' ,'breakpoints.db')
-BREAKPOINTS_GDB_PATH = os.path.join(dirname(dirname(os.path.realpath(__file__))), 'dbg_data' ,'breakpoints.gdb')
-MIN_GDB_SETTINGS_PATH = os.path.join(dirname(dirname(os.path.realpath(__file__))), 'dbg_data' ,'min_settings.gdb')
-SCRIPT_SELF_PATH = os.path.realpath(__file__.rstrip('c'))
-SETTINGS_SPELL = 'source %s' % MIN_GDB_SETTINGS_PATH
+BREAKPOINTS_DB_PATH = os.path.join(dirname(dirname(os.path.abspath(__file__))), 'dbg_data' ,'breakpoints.db')
+BREAKPOINTS_GDB_PATH = os.path.join(dirname(dirname(os.path.abspath(__file__))), 'dbg_data' ,'breakpoints.gdb')
+MIN_GDB_SETTINGS_PATH = os.path.join(dirname(dirname(os.path.abspath(__file__))), 'dbg_data' ,'min_settings.gdb')
+SCRIPT_SELF_PATH = os.path.abspath(__file__.rstrip('c'))
 GDB_INIT_PATH = os.path.join(os.path.expanduser('~'), '.gdbinit')
 BREAKPOINT_START_ID = 1000000
 
@@ -195,17 +192,22 @@ def ExportBreakpoints():
                 f.write('break %s:%d\n' % (bp.File, lineNo))
 
 
-def IsGdbInitPatched():
+def PatchGdbInit():
+    lines = []
     try:
         with open(GDB_INIT_PATH, 'r') as f:
-            for line in f:
-                line = line.rstrip('\n')
-                if line == SETTINGS_SPELL:
-                    return True
+            lines = f.readlines()
     except IOError as exc:
         if exc.errno != errno.ENOENT:
             raise
-    return False
+    with open(GDB_INIT_PATH, 'w') as f:
+        for line in lines:
+            if line.find('source') != -1 and line.find('min_settings.gdb') != -1:
+                continue
+            f.write(line)
+        settings_spell = 'source {}'.format(MIN_GDB_SETTINGS_PATH)
+        f.write('{}\n'.format(settings_spell))
+        
 
 
 GDB_SETTINGS_CONTENT = """
@@ -221,11 +223,9 @@ syncbp
 """
 
 def EnsureDebugEnvironment():
-    if not IsGdbInitPatched():
-        with open(MIN_GDB_SETTINGS_PATH, 'w') as f:
-            f.write(GDB_SETTINGS_CONTENT % (SCRIPT_SELF_PATH, BREAKPOINTS_GDB_PATH))
-        with open(GDB_INIT_PATH, 'a') as f:
-            f.write('\n%s\n' % SETTINGS_SPELL)
+    with open(MIN_GDB_SETTINGS_PATH, 'w') as f:
+        f.write(GDB_SETTINGS_CONTENT % (SCRIPT_SELF_PATH, BREAKPOINTS_GDB_PATH))
+    PatchGdbInit()
 
 
 def DatabaseIsEmpty():
