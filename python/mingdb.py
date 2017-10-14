@@ -200,13 +200,18 @@ def PatchGdbInit():
     except IOError as exc:
         if exc.errno != errno.ENOENT:
             raise
+
+    settings_spell = 'source {}\n'.format(MIN_GDB_SETTINGS_PATH)
+    if settings_spell in lines:
+        return
+
     with open(GDB_INIT_PATH, 'w') as f:
         for line in lines:
             if line.find('source') != -1 and line.find('min_settings.gdb') != -1:
                 continue
             f.write(line)
-        settings_spell = 'source {}'.format(MIN_GDB_SETTINGS_PATH)
-        f.write('{}\n'.format(settings_spell))
+        f.write('\n')
+        f.write(settings_spell)
         
 
 
