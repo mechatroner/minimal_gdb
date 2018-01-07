@@ -100,6 +100,25 @@ def ReadBreakpoints():
     return result
 
 
+def ListAllBreakpoints():
+    result = ReadBreakpoints()
+    import tempfile
+    f = tempfile.NamedTemporaryFile(mode='w', delete=False)
+    filename = f.name
+    for bp in result:
+        lineNumber = RestoreLineNumber(bp)
+        f.write(bp.File)
+        f.write(':')
+        f.write(str(lineNumber))
+        f.write(': ')
+        f.write(bp.Line)
+        f.write('\n')
+    f.close()
+
+    ExecuteVimCommand("cg {}".format(filename))
+    ExecuteVimCommand('copen')
+
+
 def GetMaxId(breakpoints):
     if not len(breakpoints):
         return BREAKPOINT_START_ID

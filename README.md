@@ -21,7 +21,8 @@ The script will configure everything when you set a first breakpoint.
 ## COMMANDS:
 ### In vim:
 * `MinGDBToggleBP` or `<leader>b` - toggles a breakpoint.
-* `MinGDBDeleteAll` - delete all breakpoints
+* `MinGDBDeleteAll` - delete all breakpoints.
+* `MinGDBListAll` - list all breakpoints in the quickfix window.
 * `MinGDBRefreshFile` - refresh breakpoints positions in a vim file. Use this in case something went wrong.
 
 ### In gdb:

@@ -62,6 +62,15 @@ function minimal_gdb#delete_all()
     redraw!
 endfunction
 
+function minimal_gdb#list_all()
+    call s:EnsurePythonInitialization()
+    if has("python3")
+        py3 mingdb.ListAllBreakpoints()
+    else
+        py mingdb.ListAllBreakpoints()
+    endif
+endfunction
+
 function minimal_gdb#show_breakpoints()
     if (!s:debug_session_is_active_cache_flag)
         return
